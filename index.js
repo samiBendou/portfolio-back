@@ -91,7 +91,7 @@ let dbclient = undefined;
 
 app.use(cors());
 app.get(`${apiEntryPath}/:username`, (req, res) => {
-    const users = dbclient.db('legacy_users').collection('users');
+    const users = dbclient.db('portfolio').collection('users');
 
     logger.info(`Searching username ${req.params.username}...`);
     users.findOne({"username": req.params.username})
