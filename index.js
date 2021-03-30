@@ -132,7 +132,7 @@ const start = (port, dbhost, dbport, dbname) => {
         .then(client => {
             logger.info(`Connected successfully to database`);
             dbclient = client;
-            const server = https.createServer(options, app).listen(port, () => {
+            const server = https.createServer(undefined, app).listen(port, () => {
                 logger.info(`Listening on port ${server.address().port}...`);
             });
         })
