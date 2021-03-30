@@ -1,4 +1,4 @@
-const version = "1.0.0";
+const version = "1.1.0";
 const program = "bendserver"
 
 // Argument  parsing
@@ -87,10 +87,16 @@ const cors = require('cors');
 const os = require("os");
 const https = require('https');
 const fs = require('fs');
-const options = {
-    key: fs.readFileSync('/etc/letsencrypt/live/portfolio.bendou.space/privkey.pem'),
-    cert: fs.readFileSync('/etc/letsencrypt/live/portfolio.bendou.space/fullchain.pem')
-};
+
+const keyPath = '/etc/letsencrypt/live/portfolio.bendou.space/privkey.pem';
+const certPath = '/etc/letsencrypt/live/portfolio.bendou.space/fullchain.pem';
+const key = fs.existsSync(keyPath) ? fs.readFileSync(keyPath) : fs.readFileSync('key.pem');
+const cert = fs.existsSync(certPath) ? fs.readFileSync(certPath) : fs.readFileSync('cert.pem');
+
+if (!fs.existsSync(certPath)) {
+    logger.warn("No public CA found, using self-signed CA...");
+}
+
 const app = express();
 const apiEntryPath = '/api/v1';
 let dbclient = undefined;
@@ -113,17 +119,17 @@ app.get(`${apiEntryPath}/:username`, (req, res) => {
                     document.items.timeline.forEach((item, index) => item.location = items[1][index]);
                     return JSON.stringify(document);
                 })
-                .then(json => res.send(json))
+                .then(json => res.status(200).send(json))
                 .catch(err => {
                     logger.error(`Failed to retrieve ${document.location.zip} ${document.location.country}\n${err}`)
                     return res
-                        .status(500)
+                        .status(502)
                         .send(`Cannot retrieve location ${document.location.zip} ${document.location.country}`);
                 });
         })
         .catch(err => {
             logger.error(`Failed to find ${req.params.username}\n${err}`)
-            return res.status(500).send(`Cannot find ${req.params.username}`);
+            return res.status(501).send(`Cannot find ${req.params.username}`);
         });
 });
 
@@ -136,7 +142,7 @@ const start = (port, dbhost, dbport, dbname) => {
         .then(client => {
             logger.info(`Connected successfully to database`);
             dbclient = client;
-            const server = https.createServer(options, app).listen(port, () => {
+            const server = https.createServer({key: key, cert: cert}, app).listen(port, () => {
                 logger.info(`Listening on port ${server.address().port}...`);
             });
         })
