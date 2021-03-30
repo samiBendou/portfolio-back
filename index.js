@@ -85,6 +85,8 @@ const fetchTimelineLocation = (items) => {
 const express = require('express');
 const cors = require('cors');
 const os = require("os");
+const https = require('https');
+const fs = require('fs');
 const app = express();
 const apiEntryPath = '/api/v1';
 let dbclient = undefined;
@@ -130,7 +132,7 @@ const start = (port, dbhost, dbport, dbname) => {
         .then(client => {
             logger.info(`Connected successfully to database`);
             dbclient = client;
-            const server = app.listen(port, () => {
+            const server = https.createServer(options, app).listen(port, () => {
                 logger.info(`Listening on port ${server.address().port}...`);
             });
         })
