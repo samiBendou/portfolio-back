@@ -10,7 +10,9 @@ export class FindUserError extends Error {
     }
 
     toString() {
-        return `${super.toString()}\n username\t${this.username}\n root cause\t${this.error}`
+        return `${super.toString()}
+        username\t${this.username}
+        root cause\t${this.error}`
     }
 }
 

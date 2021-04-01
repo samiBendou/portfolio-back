@@ -1,4 +1,4 @@
-import {FetchLocationError, FindUserError} from "./errors.js";
+import {FindUserError} from "./errors.js";
 import {findUser} from './queries.js';
 
 import mongodb from 'mongodb';
@@ -11,8 +11,16 @@ import express from 'express';
 import cors from 'cors';
 import os from 'os';
 import https from 'https';
-import {ConfigFromOptions} from "./config.js";
+import {AppConfig} from "./config.js";
+import {performance, PerformanceObserver} from 'perf_hooks'
 
+const versionTag = "2.1.0";
+const applicationName = "bendserver"
+
+const obs = new PerformanceObserver((items) => {
+    logger.info(`Done in ${items.getEntries()[0].duration} ms`);
+    performance.clearMarks();
+});
 const {combine, timestamp} = winston.format;
 const loggingFormat = winston.format.printf(({level, message}) => {
     return `${level.toUpperCase()}\t${message}`;
@@ -27,50 +35,54 @@ const app = express();
 const apiEntryPath = '/api/v1';
 let dbclient = undefined;
 
-const version = "2.0.0";
-const program = "bendserver"
-
 async function getUser(req, res) {
-    let user = undefined;
     try {
-        user = await findUser(req.params.username, dbclient);
-        res.statusCode = 200;
-    } catch(err) {
-        if(err instanceof FetchLocationError) {
-            res.statusCode = 500;
-        } else if(err instanceof FindUserError) {
-            res.statusCode = 404;
-        }
+        logger.info(`Retrieving user ${req.params.username}...`);
+        performance.mark("getUserStart");
+        const user = await findUser(req.params.username, dbclient);
+        performance.mark("getUserEnd");
+        logger.info(`Successfully retrieved user ${req.params.username}!`);
+        performance.measure("getUserPerf", "getUserStart", "getUserEnd");
+        return res.status(200).send(JSON.stringify(user));
+    } catch (err) {
         logger.error(`Failed to retrieve user! ${err}`);
-        return res.send(`Cannot retrieve user ${req.params.username}`);
+        if (err instanceof FindUserError) {
+            return res.status(404).send(`${req.params.username} not found`);
+        } else {
+            return res.status(500).send(`Cannot retrieve user ${req.params.username}`);
+        }
     }
-    logger.info(`Successfully retrieved user ${req.params.username}`);
-    return res.send(JSON.stringify(user));
 }
 
 async function startApp(options) {
+    performance.mark("startAppStart");
     const url = `mongodb://${options.db.host}:${options.db.port}/${options.db.name}`;
     logger.info(`Connecting to database at ${url}...`);
     dbclient = await mongodb.MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true})
-    logger.info(`Connected successfully to database`);
+    logger.info(`Successfully connected to ${url}!`);
+    performance.mark("startAppEnd");
+    performance.measure("getUserPerf", "startAppStart", "startAppEnd");
     const server = https.createServer(options.ca, app).listen(options.port, () => {
         logger.info(`Listening on port ${server.address().port}...`);
     });
 }
 
-logger.info(`Welcome to ${program} ${version}`);
 app.use(cors());
+app.use((req, res, next) => {
+    const incoming = `${req["connection"].remoteAddress.split(":").slice(-1)[0]}:${req["connection"].remotePort}`;
+    logger.info(`Received ${req.method} ${req.url} from ${incoming}`);
+    next();
+});
 app.get(`${apiEntryPath}/:username`, getUser);
+
+logger.info(`Welcome to ${applicationName} ${versionTag}`);
+obs.observe({entryTypes: ['measure']});
 yargs(hideBin(process.argv))
     .command('serve [port]', 'start the API server', (yargs) => {
-        yargs
-            .positional('port', {
-                describe: 'port to bind on',
-                default: 443
-            })
+        yargs.positional('port', {describe: 'port to bind on', default: 443})
     }, (argv) => {
-        logger.info(`Starting server on ${os.hostname()} at https://localhost:${argv.port}`);
-        startApp(ConfigFromOptions(argv)).catch(err => logger.error(`Failed to start application! ${err}`));
+        logger.info(`Starting application on ${os.hostname()} at https://localhost:${argv.port}`);
+        startApp(AppConfig.FromOptions(argv)).catch(err => logger.error(`Failed to start application! ${err}`));
     })
     .option('dbhost', {
         type: 'string',

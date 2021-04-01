@@ -15,14 +15,14 @@ class CaConfig {
     }
 }
 
-class AppConfig {
+export class AppConfig {
     constructor(port, db, cert) {
         this.port = port;
         this.db = db;
         this.ca = cert;
     }
-}
 
-export function ConfigFromOptions({port, dbhost, dbname, dbport, cakey, cacert}) {
-    return new AppConfig(port, new DbConfig(dbhost, dbport, dbname), new CaConfig(cakey, cacert));
+    static FromOptions({port, dbhost, dbname, dbport, cakey, cacert}) {
+        return new AppConfig(port, new DbConfig(dbhost, dbport, dbname), new CaConfig(cakey, cacert));
+    }
 }
