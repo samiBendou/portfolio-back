@@ -56,9 +56,11 @@ async function fetchTimelineLocation(items) {
 }
 
 export async function fetchLocation(location) {
-    return await Promise.all([fetchCountry(location), fetchCounty(location), fetchCity(location)]);
+    const items = await Promise.all([fetchCountry(location), fetchCounty(location), fetchCity(location)]);
+    return {country: items[0], county: items[1], city: items[2]};
 }
 
 export async function fetchUserLocations(user) {
-    return await Promise.all([fetchLocation(user.location), fetchTimelineLocation(user.items.timeline)])
+    const items = await Promise.all([fetchLocation(user.location), fetchTimelineLocation(user.items.timeline)]);
+    return {location: items[0], timeline: items[1]};
 }
