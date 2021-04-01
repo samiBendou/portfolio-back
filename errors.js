@@ -14,18 +14,22 @@ export class FindUserError extends Error {
     }
 }
 
-export class UpdateLocationError extends Error {
-    constructor(location, error, ...params) {
+export class FetchLocationError extends Error {
+    constructor(location, error, url, ...params) {
         super(params);
         if(Error.captureStackTrace) {
             Error.captureStackTrace(this, FindUserError);
         }
-        this.name = 'UpdateLocationError';
+        this.name = 'FetchLocationError';
         this.location = location;
         this.error = error;
+        this.url = url;
     }
 
     toString() {
-        return `${super.toString()}\n location\t${this.location}\n root cause\t${this.error}`
+        return `${super.toString()}
+        location\t${this.location.country} ${this.location.zip}
+        root cause\t${this.error}
+        fetch url\t${this.url}`
     }
 }

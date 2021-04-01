@@ -1,45 +1,18 @@
-const version = "2.0.0";
-const program = "bendserver"
+import {FetchLocationError, FindUserError} from "./errors.js";
+import {findUser} from './queries.js';
 
-// Mongo DB server
 import mongodb from 'mongodb';
-const connect = mongodb.MongoClient.connect;
-import {findUser} from './queries.js'
-
-async function getUser(req, res) {
-    let user = undefined;
-    try {
-        user = await findUser(req.params.username, dbclient);
-    } catch(err) {
-        logger.error(`Failed to get user! ${err}`);
-        return res.status(501).send(`Cannot retrieve user ${err.username}`);
-    }
-    return res.status(200).send(JSON.stringify(user));
-}
-
-// Server starting
-const start = (port, dbhost, dbport, dbname) => {
-    const url = `mongodb://${dbhost}:${dbport}/${dbname}`;
-
-    logger.info(`Connecting to database at ${url}...`)
-    connect(url, {useNewUrlParser: true, useUnifiedTopology: true})
-        .then(client => {
-            logger.info(`Connected successfully to database`);
-            dbclient = client;
-            const server = https.createServer({key: key, cert: cert}, app).listen(port, () => {
-                logger.info(`Listening on port ${server.address().port}...`);
-            });
-        })
-        .catch(err => logger.error(`Failed to connect to database ${err}`));
-}
-
-// Argument  parsing
 
 import yargs from 'yargs';
-import {hideBin} from 'yargs/helpers'
-
-// Application logger
+import {hideBin} from 'yargs/helpers';
 import winston from 'winston';
+
+import express from 'express';
+import cors from 'cors';
+import os from 'os';
+import https from 'https';
+import {ConfigFromOptions} from "./config.js";
+
 const {combine, timestamp} = winston.format;
 const loggingFormat = winston.format.printf(({level, message}) => {
     return `${level.toUpperCase()}\t${message}`;
@@ -50,29 +23,44 @@ const logger = winston.createLogger({
     transports: [new winston.transports.Console()]
 });
 
-// Express Routing
-import express from 'express';
-import cors from 'cors';
-import os from 'os';
-import https from 'https';
-import fs from 'fs';
-
 const app = express();
 const apiEntryPath = '/api/v1';
 let dbclient = undefined;
 
-const keyPath = '/etc/letsencrypt/live/portfolio.bendou.space/privkey.pem';
-const certPath = '/etc/letsencrypt/live/portfolio.bendou.space/fullchain.pem';
-const key = fs.existsSync(keyPath) ? fs.readFileSync(keyPath) : fs.readFileSync('key.pem');
-const cert = fs.existsSync(certPath) ? fs.readFileSync(certPath) : fs.readFileSync('cert.pem');
+const version = "2.0.0";
+const program = "bendserver"
 
-if (!fs.existsSync(certPath)) {
-    logger.warn("No public CA found, using self-signed CA...");
+async function getUser(req, res) {
+    let user = undefined;
+    try {
+        user = await findUser(req.params.username, dbclient);
+        res.statusCode = 200;
+    } catch(err) {
+        if(err instanceof FetchLocationError) {
+            res.statusCode = 500;
+        } else if(err instanceof FindUserError) {
+            res.statusCode = 404;
+        }
+        logger.error(`Failed to retrieve user! ${err}`);
+        return res.send(`Cannot retrieve user ${req.params.username}`);
+    }
+    logger.info(`Successfully retrieved user ${req.params.username}`);
+    return res.send(JSON.stringify(user));
 }
 
+async function startApp(options) {
+    const url = `mongodb://${options.db.host}:${options.db.port}/${options.db.name}`;
+    logger.info(`Connecting to database at ${url}...`);
+    dbclient = await mongodb.MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true})
+    logger.info(`Connected successfully to database`);
+    const server = https.createServer(options.ca, app).listen(options.port, () => {
+        logger.info(`Listening on port ${server.address().port}...`);
+    });
+}
+
+logger.info(`Welcome to ${program} ${version}`);
 app.use(cors());
 app.get(`${apiEntryPath}/:username`, getUser);
-logger.info(`Welcome to ${program} ${version}`)
 yargs(hideBin(process.argv))
     .command('serve [port]', 'start the API server', (yargs) => {
         yargs
@@ -81,9 +69,8 @@ yargs(hideBin(process.argv))
                 default: 443
             })
     }, (argv) => {
-        logger.info(`Starting server on ${os.hostname()} at port ${argv.port}`);
-        // noinspection JSUnresolvedVariable
-        start(argv.port, argv.dbhost, argv.dbport, argv.dbname);
+        logger.info(`Starting server on ${os.hostname()} at https://localhost:${argv.port}`);
+        startApp(ConfigFromOptions(argv)).catch(err => logger.error(`Failed to start application! ${err}`));
     })
     .option('dbhost', {
         type: 'string',
@@ -100,5 +87,15 @@ yargs(hideBin(process.argv))
         default: 'portfolio',
         description: 'Database name if different from default'
     })
+    .option('cakey', {
+        type: 'string',
+        default: 'key.pem',
+        description: 'CA private key if different from self-signed'
+    })
+    .option('cacert', {
+        type: 'string',
+        default: 'cert.pem',
+        description: 'CA certificate if different from self-signed'
+    })
     .strictCommands()
-    .argv
+    .argv;

@@ -1,24 +1,53 @@
 // Geolocation
 import fetch from 'node-fetch';
+import {FetchLocationError} from "./errors.js";
 
 const euCountriesApi = "https://restcountries.eu/rest/v2/alpha";
 const frGeolocationApi = "https://geo.api.gouv.fr";
 
 async function fetchCountry(location) {
-    const response = await fetch(`${euCountriesApi}/${location.country}`);
-    const json = await response.json();
+    const url = `${euCountriesApi}/${location.country}`;
+    let json = undefined;
+    try {
+        const response = await fetch(url);
+        json = await response.json();
+    } catch (err) {
+        throw new FetchLocationError(location, err, url, 'failed to fetch country');
+    }
+    if (json.length === 0) {
+        throw new FetchLocationError(location, undefined, url, 'country not found');
+    }
     return json["name"];
+
 }
 
 async function fetchCounty(location) {
-    const response = await fetch(`${frGeolocationApi}/departements?code=${location.zip.slice(0, 2)}`);
-    const json = await response.json();
+    const url = `${frGeolocationApi}/departements?code=${location.zip.slice(0, 2)}`;
+    let json = undefined;
+    try {
+        const response = await fetch(url);
+        json = await response.json();
+    } catch (err) {
+        throw new FetchLocationError(location, err, url ,'failed to fetch county');
+    }
+    if (json.length === 0) {
+        throw new FetchLocationError(location, undefined, url, 'county not found');
+    }
     return json[0]["nom"];
 }
 
 async function fetchCity(location) {
-    const response = await fetch(`${frGeolocationApi}/communes?codePostal=${location.zip}&format=json`);
-    const json = await response.json();
+    const url = `${frGeolocationApi}/communes?codePostal=${location.zip}&format=json`;
+    let json = undefined;
+    try {
+        const response = await fetch(url);
+        json = await response.json();
+    } catch (err) {
+        throw new FetchLocationError(location, err, url, 'failed to fetch county');
+    }
+    if (json.length === 0) {
+        throw new FetchLocationError(location, undefined, url, 'city not found');
+    }
     return json[0]["nom"];
 }
 
