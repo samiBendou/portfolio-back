@@ -1,58 +1,35 @@
-
 // Geolocation
 import fetch from 'node-fetch';
 
 const euCountriesApi = "https://restcountries.eu/rest/v2/alpha";
 const frGeolocationApi = "https://geo.api.gouv.fr";
 
-const fetchCountry = (location) => {
-    const countryUrl = `${euCountriesApi}/${location.country}`;
-    return new Promise((resolve, reject) => {
-        fetch(countryUrl)
-            .then(response => response.json())
-            .then(data => resolve(data["name"]))
-            .catch((err) => reject(`Unable to fetch ${countryUrl} ${err}`));
-    });
-};
-
-const fetchCounty = (location) => {
-    const departmentUrl = `${frGeolocationApi}/departements?code=${location.zip.slice(0, 2)}`;
-    return new Promise((resolve, reject) => {
-        fetch(departmentUrl)
-            .then(response => response.json())
-            .then((data) => resolve(data[0]["nom"]))
-            .catch((e) => reject(`Unable to fetch ${departmentUrl} ${e}`));
-    });
+async function fetchCountry(location) {
+    const response = await fetch(`${euCountriesApi}/${location.country}`);
+    const json = await response.json();
+    return json["name"];
 }
 
-const fetchCity = (location) => {
-    const cityUrl = `${frGeolocationApi}/communes?codePostal=${location.zip}&format=json`;
-    return new Promise((resolve, reject) => {
-        fetch(cityUrl)
-            .then(response => response.json())
-            .then(data => resolve(data[0]["nom"]))
-            .catch((err) => reject(`Unable to fetch ${cityUrl} ${err}`));
-    });
+async function fetchCounty(location) {
+    const response = await fetch(`${frGeolocationApi}/departements?code=${location.zip.slice(0, 2)}`);
+    const json = await response.json();
+    return json[0]["nom"];
 }
 
-const fetchTimelineLocation = (items) => {
-    return new Promise((resolve, reject) => {
-            Promise.all(items.map(item => fetchLocation(item.location)))
-                .then(locations => resolve(locations))
-                .catch(e => reject(e));
-        }
-    )
-};
+async function fetchCity(location) {
+    const response = await fetch(`${frGeolocationApi}/communes?codePostal=${location.zip}&format=json`);
+    const json = await response.json();
+    return json[0]["nom"];
+}
 
-export const fetchLocation = (location) => {
-    return new Promise((resolve, reject) => {
-            Promise.all([fetchCountry(location), fetchCounty(location), fetchCity(location)])
-                .then(data => resolve({country: data[0], county: data[1], city: data[2]}))
-                .catch(err => reject(err));
-        }
-    )
-};
+async function fetchTimelineLocation(items) {
+    return await Promise.all(items.map(item => fetchLocation(item.location)));
+}
 
-export const fetchUserLocations = (user) => {
-    return Promise.all([fetchLocation(user.location), fetchTimelineLocation(user.items.timeline)])
+export async function fetchLocation(location) {
+    return await Promise.all([fetchCountry(location), fetchCounty(location), fetchCity(location)]);
+}
+
+export async function fetchUserLocations(user) {
+    return await Promise.all([fetchLocation(user.location), fetchTimelineLocation(user.items.timeline)])
 }
