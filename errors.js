@@ -10,7 +10,7 @@ export class FindUserError extends Error {
     }
 
     toString() {
-        return `${super.toString()}\nusername\t${this.username}\nroot cause\t${this.error}`
+        return `${super.toString()}\n username\t${this.username}\n root cause\t${this.error}`
     }
 }
 
@@ -26,6 +26,6 @@ export class UpdateLocationError extends Error {
     }
 
     toString() {
-        return `${super.toString()}\nlocation\t${this.location}\nroot cause\t${this.error}`
+        return `${super.toString()}\n location\t${this.location}\n root cause\t${this.error}`
     }
 }
