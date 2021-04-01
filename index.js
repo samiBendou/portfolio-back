@@ -88,8 +88,8 @@ const os = require("os");
 const https = require('https');
 const fs = require('fs');
 
-const keyPath = '/etc/letsencrypt/live/portfolio.bendou.space/privkey.pem';
-const certPath = '/etc/letsencrypt/live/portfolio.bendou.space/fullchain.pem';
+const keyPath = process.env.KEY_PATH;
+const certPath = process.env.CART_PATH;
 const key = fs.existsSync(keyPath) ? fs.readFileSync(keyPath) : fs.readFileSync('key.pem');
 const cert = fs.existsSync(certPath) ? fs.readFileSync(certPath) : fs.readFileSync('cert.pem');
 
