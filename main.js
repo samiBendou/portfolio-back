@@ -69,7 +69,7 @@ async function startApp(options) {
 
 app.use(cors());
 app.use((req, res, next) => {
-    const incoming = `${req["connection"].remoteAddress.split(":").slice(-1)[0]}:${req["connection"].remotePort}`;
+    const incoming = `${req.socket.remoteAddress.split(":").slice(-1)[0]}:${req.socket.remotePort}`;
     logger.info(`Received ${req.method} ${req.url} from ${incoming}`);
     next();
 });
@@ -101,12 +101,12 @@ yargs(hideBin(process.argv))
     })
     .option('cakey', {
         type: 'string',
-        default: 'key.pem',
+        default: 'cert/key.pem',
         description: 'CA private key if different from self-signed'
     })
     .option('cacert', {
         type: 'string',
-        default: 'cert.pem',
+        default: 'cert/cert.pem',
         description: 'CA certificate if different from self-signed'
     })
     .strictCommands()
