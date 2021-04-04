@@ -54,15 +54,22 @@ async function getUser(req, res) {
     }
 }
 
-async function startApp(options) {
+async function startApp(config) {
     performance.mark("startAppStart");
-    const url = `mongodb://${options.db.host}:${options.db.port}/${options.db.name}`;
+    const url = `mongodb://${config.db.host}:${config.db.port}/${config.db.name}`;
+    const dboptions = {
+        "authSource": "admin",
+        "auth.user": config.db.user.username,
+        "auth.password": config.db.user.password,
+        "useNewUrlParser": true,
+        "useUnifiedTopology": true
+    }
     logger.info(`Connecting to database at ${url}...`);
-    dbclient = await mongodb.MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true})
+    dbclient = await mongodb.MongoClient.connect(url, dboptions)
     logger.info(`Successfully connected to ${url}!`);
     performance.mark("startAppEnd");
     performance.measure("getUserPerf", "startAppStart", "startAppEnd");
-    const server = https.createServer(options.ca, app).listen(options.port, () => {
+    const server = https.createServer(config.ca, app).listen(config.port, () => {
         logger.info(`Listening on port ${server.address().port}...`);
     });
 }
@@ -98,6 +105,16 @@ yargs(hideBin(process.argv))
         type: 'string',
         default: 'portfolio',
         description: 'Database name if different from default'
+    })
+    .option('dbuser', {
+        type: 'string',
+        default: 'reader',
+        description: 'Database user if different from default reader'
+    })
+    .option('dbpwd', {
+        type: 'string',
+        default: '',
+        description: 'Database user password'
     })
     .option('cakey', {
         type: 'string',
