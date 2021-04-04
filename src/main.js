@@ -14,7 +14,7 @@ import https from 'https';
 import {AppConfig} from "./config.js";
 import {performance, PerformanceObserver} from 'perf_hooks'
 
-const versionTag = "2.1.0";
+const versionTag = "2.2.0";
 const applicationName = "bendserver"
 
 const obs = new PerformanceObserver((items) => {
@@ -54,22 +54,27 @@ async function getUser(req, res) {
     }
 }
 
-async function startApp(options) {
+async function startApp(config) {
     performance.mark("startAppStart");
-    const url = `mongodb://${options.db.host}:${options.db.port}/${options.db.name}`;
+    const url = `mongodb://${config.db.user.username}:${config.db.user.password}@${config.db.host}:${config.db.port}/${config.db.name}`;
+    const dboptions = {
+        "authSource": "admin",
+        "useNewUrlParser": true,
+        "useUnifiedTopology": true
+    }
     logger.info(`Connecting to database at ${url}...`);
-    dbclient = await mongodb.MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true})
+    dbclient = await mongodb.MongoClient.connect(url, dboptions)
     logger.info(`Successfully connected to ${url}!`);
     performance.mark("startAppEnd");
     performance.measure("getUserPerf", "startAppStart", "startAppEnd");
-    const server = https.createServer(options.ca, app).listen(options.port, () => {
+    const server = https.createServer(config.ca, app).listen(config.port, () => {
         logger.info(`Listening on port ${server.address().port}...`);
     });
 }
 
 app.use(cors());
 app.use((req, res, next) => {
-    const incoming = `${req["connection"].remoteAddress.split(":").slice(-1)[0]}:${req["connection"].remotePort}`;
+    const incoming = `${req.socket.remoteAddress.split(":").slice(-1)[0]}:${req.socket.remotePort}`;
     logger.info(`Received ${req.method} ${req.url} from ${incoming}`);
     next();
 });
@@ -99,14 +104,24 @@ yargs(hideBin(process.argv))
         default: 'portfolio',
         description: 'Database name if different from default'
     })
+    .option('dbuser', {
+        type: 'string',
+        default: 'reader',
+        description: 'Database user if different from default reader'
+    })
+    .option('dbpwd', {
+        type: 'string',
+        default: '',
+        description: 'Database user password'
+    })
     .option('cakey', {
         type: 'string',
-        default: 'key.pem',
+        default: 'cert/key.pem',
         description: 'CA private key if different from self-signed'
     })
     .option('cacert', {
         type: 'string',
-        default: 'cert.pem',
+        default: 'cert/cert.pem',
         description: 'CA certificate if different from self-signed'
     })
     .strictCommands()
