@@ -3,7 +3,7 @@ import fs from "fs";
 class DbUser {
     constructor(username, password) {
         this.username = encodeURIComponent(username);
-        this.password = encodeURIComponent(password);
+        this.password = password;
     }
 }
 
