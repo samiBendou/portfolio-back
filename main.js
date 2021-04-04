@@ -56,11 +56,9 @@ async function getUser(req, res) {
 
 async function startApp(config) {
     performance.mark("startAppStart");
-    const url = `mongodb://${config.db.host}:${config.db.port}/${config.db.name}`;
+    const url = `mongodb://${config.db.user.username}:${config.db.user.password}@${config.db.host}:${config.db.port}/${config.db.name}`;
     const dboptions = {
         "authSource": "admin",
-        "user": `${config.db.user.username}`,
-        "password": `${config.db.user.password}`,
         "useNewUrlParser": true,
         "useUnifiedTopology": true
     }
