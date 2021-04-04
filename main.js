@@ -60,7 +60,7 @@ async function startApp(config) {
     const dboptions = {
         "authSource": "admin",
         "user": config.db.user.username,
-        "pass": config.db.user.password,
+        "password": config.db.user.password,
         "useNewUrlParser": true,
         "useUnifiedTopology": true
     }
