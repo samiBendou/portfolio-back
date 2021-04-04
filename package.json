@@ -1,9 +1,9 @@
 {
   "name": "portfolio-back",
-  "version": "1.0.0",
+  "version": "2.2.0",
   "description": "backend for portfolio",
   "type": "module",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
