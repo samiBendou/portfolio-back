@@ -2,8 +2,8 @@ import fs from "fs";
 
 class DbUser {
     constructor(username, password) {
-        this.username = username;
-        this.password = password;
+        this.username = encodeURIComponent(username);
+        this.password = encodeURIComponent(password);
     }
 }
 
