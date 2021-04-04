@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "backend for portfolio",
   "type": "module",
-  "main": "main.js",
+  "main": "src/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "serve_https": "node src/main.js serve",
+    "serve_5000": "node src/main.js serve 5000"
   },
   "author": "samiBendou",
   "license": "ISC",
