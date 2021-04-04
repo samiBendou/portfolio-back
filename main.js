@@ -59,8 +59,8 @@ async function startApp(config) {
     const url = `mongodb://${config.db.host}:${config.db.port}/${config.db.name}`;
     const dboptions = {
         "authSource": "admin",
-        "user": config.db.user.username,
-        "password": config.db.user.password,
+        "user": `${config.db.user.username}`,
+        "password": `${config.db.user.password}`,
         "useNewUrlParser": true,
         "useUnifiedTopology": true
     }
