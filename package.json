@@ -1,21 +1,25 @@
 {
-  "name": "portfolio-back",
-  "version": "1.0.0",
-  "description": "backend for portfolio",
-  "type": "module",
-  "main": "src/main.js",
-  "scripts": {
-    "serve_https": "node src/main.js serve",
-    "serve_5000": "node src/main.js serve 5000"
-  },
-  "author": "samiBendou",
-  "license": "ISC",
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "mongodb": "^3.6.4",
-    "node-fetch": "^2.6.1",
-    "winston": "^3.3.3",
-    "yargs": "^16.2.0"
-  }
+    "name": "portfolio-back",
+    "version": "1.0.0",
+    "description": "backend for portfolio",
+    "type": "module",
+    "main": "src/index.js",
+    "scripts": {
+        "serve_https": "node src/index.js serve",
+        "serve_5000": "node src/index.js serve 5000"
+    },
+    "author": "samiBendou",
+    "license": "ISC",
+    "dependencies": {
+        "cors": "^2.8.5",
+        "dotenv": "^10.0.0",
+        "express": "^4.17.1",
+        "mongodb": "^4.1.1",
+        "node-fetch": "^2.6.1",
+        "winston": "^3.3.3",
+        "yargs": "^16.2.0"
+    },
+    "devDependencies": {
+        "prettier": "2.3.2"
+    }
 }

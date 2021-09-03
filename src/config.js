@@ -30,10 +30,11 @@ export class AppConfig {
         this.ca = cert;
     }
 
-    static FromOptions({port, dbhost, dbname, dbport, dbuser, dbpwd, cakey, cacert}) {
+    static FromOptions(config, env) {
         return new AppConfig(
-            port, 
-            new DbConfig(dbhost, dbport, dbname, new DbUser(dbuser, dbpwd)), 
-            new CaConfig(cakey, cacert));
+            config.port,
+            new DbConfig(env.DB_HOST, env.DB_PORT, config.dbname, new DbUser(env.DB_USER, env.DB_PASS)),
+            new CaConfig(env.CA_KEY, env.CA_CERT)
+        );
     }
 }
