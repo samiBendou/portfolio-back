@@ -1,16 +1,25 @@
-import { logger, obs, performance } from "./logging.js";
+import { logger, obs, performance } from "./utils/logging.js";
 import { AppConfig } from "./config.js";
 import { connectToDb } from "./db/index.js";
+import { getRoutes } from "./routes/index.js";
+import { appName, appVersion } from "./index.js";
 
 import express from "express";
 import os from "os";
 import https from "https";
 import yargs from "yargs";
+import dotenv from "dotenv";
 import { hideBin } from "yargs/helpers";
-import { getRoutes } from "./routes/index.js";
 
-const versionTag = "2.3.0";
-const applicationName = "bendserver";
+function setEnvironment() {
+    if (process.env.NODE_ENV !== "production") {
+        const result = dotenv.config();
+        if (result.error) {
+            logger.error(result.error);
+            process.exit(9);
+        }
+    }
+}
 
 function parseConfig() {
     let argv = undefined;
@@ -49,21 +58,15 @@ function serveApp(ca, port, app) {
 }
 
 export default async function startApp(argv) {
-    // Application version information
+    setEnvironment();
 
     performance.mark("startAppStart");
-
     obs.observe({ entryTypes: ["measure"] });
 
-    // Express application setup
-
     const app = express();
-
-    // Routes
-
     app.use("/", getRoutes());
 
-    logger.info(`Starting ${applicationName} ${versionTag} on ${os.hostname()}`);
+    logger.info(`Starting ${appName} ${appVersion} on ${os.hostname()}`);
     const config = parseConfig(argv);
     const db = await connectToDb(config.db);
     const server = serveApp(config.ca, config.port, app);

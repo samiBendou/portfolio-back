@@ -1,5 +1,5 @@
 import mongodb from "mongodb";
-import { logger } from "../logging.js";
+import { logger } from "../utils/logging.js";
 
 let client = undefined;
 

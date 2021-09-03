@@ -18,8 +18,8 @@ class DbConfig {
 
 class CaConfig {
     constructor(key, cert) {
-        this.key = fs.readFileSync(key);
-        this.cert = fs.readFileSync(cert);
+        this.key = fs.readFileSync(key, "utf-8");
+        this.cert = fs.readFileSync(cert, "utf-8");
     }
 }
 

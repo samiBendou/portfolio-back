@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { logger } from "../logging.js";
+import { logger } from "../utils/logging.js";
 
 async function getIncomingAddr(req, res, next) {
     const incoming = `${req.socket.remoteAddress.split(":").slice(-1)[0]}:${req.socket.remotePort}`;
@@ -17,7 +17,7 @@ function errorMiddleware(error, req, res, next) {
         res.json({
             message: error.message,
             // we only add a `stack` property in non-production environments
-            ...(process.env.NODE_ENV === "production" ? null : null),
+            ...(process.env.NODE_ENV === "production" ? null : { stack: error.stack }),
         });
     }
 }

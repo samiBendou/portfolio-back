@@ -1,4 +1,4 @@
-import { logger, performance } from "../logging.js";
+import { logger, performance } from "../utils/logging.js";
 import { FindUserError } from "../errors.js";
 import { findUser } from "../db/queries.js";
 import express from "express";

@@ -1,5 +1,5 @@
 import { FindUserError } from "../errors.js";
-import { fetchUserLocations } from "../geolocation.js";
+import { fetchUserLocations } from "../utils/geolocation.js";
 import { client } from "./index.js";
 
 export async function findUser(username) {
