@@ -22,12 +22,10 @@ function errorMiddleware(error, req, res, next) {
     }
 }
 
-function getMiddleware() {
+export default function getMiddleware() {
     const router = express.Router();
     router.use(cors());
     router.use(errorMiddleware);
     router.use(getIncomingAddr);
     return router;
 }
-
-export default getMiddleware;

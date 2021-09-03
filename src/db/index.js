@@ -1,9 +1,10 @@
 import mongodb from "mongodb";
+import { ExitCode, FatalError } from "../errors.js";
 import { logger } from "../utils/logging.js";
 
-let client = undefined;
+export let client = undefined;
 
-async function connectToDb(config) {
+export async function connectToDb(config) {
     const connectUrl = `mongodb://${config.user.username}:${config.user.password}@${config.host}:${config.port}/${config.name}`;
     const displayUrl = `mongodb://${config.user.username}:********@${config.host}:${config.port}/${config.name}`;
     const dbOptions = { authSource: "admin", useNewUrlParser: true, useUnifiedTopology: true };
@@ -12,11 +13,8 @@ async function connectToDb(config) {
     try {
         client = await mongodb.MongoClient.connect(connectUrl, dbOptions);
     } catch (err) {
-        logger.error(`Unable to connect to database ! ${err}`);
-        process.exit(2);
+        throw new FatalError(err, ExitCode.FailedConnect, "Unable to connect to database !");
     }
     logger.info(`Successfully connected to ${displayUrl}`);
     return client;
 }
-
-export { connectToDb, client };

@@ -5,7 +5,7 @@ import { client } from "./index.js";
 export async function findUser(username) {
     let user = await client.db("portfolio").collection("users").findOne({ username: username });
     if (user === null) {
-        throw new FindUserError(username, undefined, `User does not exist`);
+        throw new FindUserError(username, undefined, `User does not exist !`);
     }
 
     const items = await fetchUserLocations(user);

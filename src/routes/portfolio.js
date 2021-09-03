@@ -4,28 +4,27 @@ import { findUser } from "../db/queries.js";
 import express from "express";
 
 async function getUser(req, res) {
+    let username = req.params.username.toString();
     try {
-        logger.info(`Retrieving user ${req.params.username} ...`);
+        logger.info(`Retrieving user ${username} ...`);
         performance.mark("getUserStart");
-        const user = await findUser(req.params.username);
+        const user = await findUser(username);
         performance.mark("getUserEnd");
-        logger.info(`Successfully retrieved user ${req.params.username}`);
+        logger.info(`Successfully retrieved user ${username}`);
         performance.measure("getUserPerf", "getUserStart", "getUserEnd");
         return res.status(200).send(JSON.stringify(user));
     } catch (err) {
-        logger.error(`Failed to retrieve user! ${err}`);
+        logger.error(err.toString());
         if (err instanceof FindUserError) {
-            return res.status(404).send(`${req.params.username} not found`);
+            return res.status(404).send(`${username} not found`);
         } else {
-            return res.status(500).send(`Cannot retrieve user ${req.params.username}`);
+            return res.status(500).send(`Cannot retrieve user ${username}`);
         }
     }
 }
 
-function getPortfolioRoutes() {
+export default function getPortfolioRoutes() {
     const router = express.Router();
     router.get("/:username", getUser);
     return router;
 }
-
-export default getPortfolioRoutes;

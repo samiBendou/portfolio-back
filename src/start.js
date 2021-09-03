@@ -1,7 +1,7 @@
 import { logger, obs, performance } from "./utils/logging.js";
 import { AppConfig } from "./config.js";
 import { connectToDb } from "./db/index.js";
-import { getRoutes } from "./routes/index.js";
+import getRoutes from "./routes/index.js";
 import { appName, appVersion } from "./index.js";
 
 import express from "express";
@@ -10,13 +10,15 @@ import https from "https";
 import yargs from "yargs";
 import dotenv from "dotenv";
 import { hideBin } from "yargs/helpers";
+import { ExitCode, FatalError } from "./errors.js";
 
-function setEnvironment() {
+let server = undefined;
+
+function setupEnvironment() {
     if (process.env.NODE_ENV !== "production") {
         const result = dotenv.config();
         if (result.error) {
-            logger.error(result.error);
-            process.exit(9);
+            throw new FatalError(result.error, ExitCode.BadEnvironment, "Environment error !");
         }
     }
 }
@@ -45,37 +47,74 @@ function parseConfig() {
     try {
         return AppConfig.FromOptions(argv, process.env);
     } catch (err) {
-        logger.error(`Unable to parse configuration ! ${err}`);
-        process.exit(1);
+        throw new FatalError(err, ExitCode.BadConfig, "Unable to parse configuration !");
     }
 }
 
 function serveApp(ca, port, app) {
-    let server = https.createServer(ca, app).listen(port, () => {
+    server = https.createServer(ca, app).listen(port, () => {
         logger.info(`Listening on https://localhost:${server.address().port} ...`);
     });
     return server;
 }
 
-export default async function startApp(argv) {
-    setEnvironment();
+function setupProcessExit(server) {
+    async function exitHandler(options = {}) {
+        process.exit();
+    }
 
-    performance.mark("startAppStart");
+    process.on("exit", (code) => {
+        if (server !== undefined) {
+            try {
+                server.close();
+                logger.info("Server successfully closed");
+            } catch (err) {
+                logger.warn("Something went wrong closing the server", err.stack);
+            }
+        }
+
+        logger.info(`Exiting with code ${code} ...`);
+    });
+    process.on("SIGINT", exitHandler);
+    process.on("SIGUSR1", exitHandler);
+    process.on("SIGUSR2", exitHandler);
+    process.on("uncaughtException", exitHandler);
+}
+
+function setupServerError(server) {
+    server.on("error", (err) => {
+        const fatal = new FatalError(err, ExitCode.ServerError, "Server encountered an error !");
+        logger.error(fatal.toString());
+        process.exit(fatal.code);
+    });
+}
+
+export default async function startApp(argv) {
     obs.observe({ entryTypes: ["measure"] });
+    performance.mark("startAppStart");
+
+    setupProcessExit(server);
 
     const app = express();
     app.use("/", getRoutes());
 
     logger.info(`Starting ${appName} ${appVersion} on ${os.hostname()}`);
-    const config = parseConfig(argv);
-    const db = await connectToDb(config.db);
-    const server = serveApp(config.ca, config.port, app);
 
-    server.on("error", (err) => {
-        logger.error(`Server error ! ${err}`);
-        server.close();
-        process.exit(3);
-    });
+    try {
+        setupEnvironment();
+        const config = parseConfig(argv);
+        await connectToDb(config.db);
+        serveApp(config.ca, config.port, app);
+    } catch (err) {
+        if (err instanceof FatalError) {
+            logger.error(err.toString());
+            process.exit(err.code);
+        } else {
+            throw err;
+        }
+    }
+
+    setupServerError(server);
 
     performance.mark("startAppEnd");
     performance.measure("getUserPerf", "startAppStart", "startAppEnd");

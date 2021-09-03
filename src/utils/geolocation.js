@@ -42,7 +42,7 @@ async function fetchCity(location) {
         const response = await fetch(url);
         json = await response.json();
     } catch (err) {
-        throw new FetchLocationError(location, err, url, "failed to fetch county");
+        throw new FetchLocationError(location, err, url, "failed to fetch city");
     }
     if (json.length === 0) {
         throw new FetchLocationError(location, undefined, url, "city not found");
