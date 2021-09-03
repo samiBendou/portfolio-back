@@ -1,8 +1,9 @@
-import {FindUserError} from "./errors.js"
-import {fetchUserLocations} from "./geolocation.js";
+import { FindUserError } from "../errors.js";
+import { fetchUserLocations } from "../geolocation.js";
+import { client } from "./index.js";
 
-export async function findUser(username, client) {
-    let user = await client.db('portfolio').collection('users').findOne({"username": username});
+export async function findUser(username) {
+    let user = await client.db("portfolio").collection("users").findOne({ username: username });
     if (user === null) {
         throw new FindUserError(username, undefined, `User does not exist`);
     }

@@ -12,7 +12,7 @@ export class FindUserError extends Error {
     toString() {
         return `${super.toString()}
         username\t${this.username}
-        root cause\t${this.error}`;
+        reason  \t${this.error}`;
     }
 }
 
@@ -30,8 +30,8 @@ export class FetchLocationError extends Error {
 
     toString() {
         return `${super.toString()}
-        location\t${this.location.country} ${this.location.zip}
-        root cause\t${this.error}
+        location \t${this.location.country} ${this.location.zip}
+        reason   \t${this.error}
         fetch url\t${this.url}`;
     }
 }
