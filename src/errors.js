@@ -10,8 +10,8 @@ export class FindUserError extends Error {
     }
 
     toString() {
-        let reason = this.reason || "";
-        return `${super.toString()} username: ${this.username} (${reason})`;
+        const reason = this.reason ? `(${this.reason})` : "";
+        return `${super.toString()} username: ${this.username} ${reason}`;
     }
 }
 
@@ -28,8 +28,8 @@ export class FetchLocationError extends Error {
     }
 
     toString() {
-        let reason = this.reason || "";
-        return `${super.toString()} ${this.location.country} ${this.location.zip}, url ${this.url} (${reason})`;
+        const reason = this.reason ? `(${this.reason})` : "";
+        return `${super.toString()} ${this.location.country} ${this.location.zip}, url ${this.url} ${reason}`;
     }
 }
 
