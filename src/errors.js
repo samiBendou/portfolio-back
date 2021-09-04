@@ -49,8 +49,8 @@ export class FatalError extends Error {
 }
 
 export const ExitCode = {
-    BadConfig: 1,
-    FailedConnect: 2,
-    ServerError: 3,
-    BadEnvironment: 4,
+    BadConfig: 170,
+    FailedConnect: 171,
+    ServerError: 172,
+    BadEnvironment: 173,
 };

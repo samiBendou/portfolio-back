@@ -59,8 +59,8 @@ function serveApp(ca, port, app) {
 }
 
 function setupProcessExit(server) {
-    async function exitHandler(options = {}) {
-        process.exit();
+    async function exitHandler(code) {
+        process.exit(code);
     }
 
     process.on("exit", (code) => {
