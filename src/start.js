@@ -2,6 +2,7 @@ import { logger, obs, performance } from "./utils/logging.js";
 import { AppConfig } from "./config.js";
 import { connectToDb } from "./db/index.js";
 import getRoutes from "./routes/index.js";
+import getMiddleware from "./routes/middleware.js";
 import { appName, appVersion } from "./index.js";
 
 import express from "express";
@@ -60,6 +61,7 @@ function serveApp(ca, port, app) {
 
 function setupProcessExit(server) {
     async function exitHandler(code) {
+        code = code instanceof Error ? 1 : code;
         process.exit(code);
     }
 
@@ -97,7 +99,8 @@ export default async function startApp(argv) {
 
     const app = express();
 
-    app.use(express.static(`../portfolio-front/build`));
+    app.use("/", getMiddleware());
+    app.use("/portfolio", express.static(`../portfolio-front/build`));
     app.use("/api", getRoutes());
 
     logger.info(`Starting ${appName} ${appVersion} on ${os.hostname()}`);

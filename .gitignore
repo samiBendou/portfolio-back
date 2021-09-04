@@ -5,3 +5,4 @@ cert/
 *.pem
 node_modules/
 .env
+api.log
