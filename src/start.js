@@ -96,7 +96,9 @@ export default async function startApp(argv) {
     setupProcessExit(server);
 
     const app = express();
-    app.use("/", getRoutes());
+
+    app.use(express.static(`../portfolio-front/build`));
+    app.use("/api", getRoutes());
 
     logger.info(`Starting ${appName} ${appVersion} on ${os.hostname()}`);
 
