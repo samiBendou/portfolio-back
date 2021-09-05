@@ -87,10 +87,11 @@ function setupProcessExit() {
                 logger.warn("Something went wrong closing the server", err.stack);
             }
         }
-
-        logger.info(`Exiting with code ${code} ...`);
+        const attribute = code instanceof String ? "signal" : "code";
+        logger.info(`Exiting with ${attribute} ${code} ...`);
     });
     process.on("SIGINT", exitHandler);
+    process.on("SIGTERM", exitHandler);
     process.on("SIGUSR1", exitHandler);
     process.on("SIGUSR2", exitHandler);
     process.on("uncaughtException", exitHandler);
