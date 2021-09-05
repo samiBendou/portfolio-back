@@ -28,12 +28,14 @@ function setupAppRoutes() {
     const app = express();
 
     app.use("/", getMiddleware());
-    app.get("/", (_, res) => {
-        res.redirect("/portfolio");
-    });
     app.use("/portfolio", express.static(`../portfolio-front/build`));
     app.use("/api", getRoutes());
-
+    app.get("/", (_, res) => {
+        res.status(301).redirect("/portfolio");
+    });
+    app.get("/favicon.ico", (_, res) => {
+        res.status(301).redirect("/portfolio/favicon.ico");
+    });
     return app;
 }
 
