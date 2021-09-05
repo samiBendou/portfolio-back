@@ -34,7 +34,7 @@ function setupAppRoutes() {
         res.status(301).redirect("/portfolio");
     });
     app.get("/favicon.ico", (_, res) => {
-        res.status(301).redirect("/portfolio/favicon.ico");
+        res.status(200).redirect("/portfolio/favicon.ico");
     });
     return app;
 }
