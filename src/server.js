@@ -24,7 +24,20 @@ function setupEnvironment() {
     }
 }
 
-function parseConfig() {
+function setupAppRoutes() {
+    const app = express();
+
+    app.use("/", getMiddleware());
+    app.get("/", (_, res) => {
+        res.redirect("/portfolio");
+    });
+    app.use("/portfolio", express.static(`../portfolio-front/build`));
+    app.use("/api", getRoutes());
+
+    return app;
+}
+
+function setupConfig() {
     let argv = undefined;
     yargs(hideBin(process.argv))
         .command(
@@ -52,14 +65,14 @@ function parseConfig() {
     }
 }
 
-function serveApp(ca, port, app) {
+function setupServer(ca, port, app) {
     server = https.createServer(ca, app).listen(port, () => {
         logger.info(`Listening on https://localhost:${server.address().port} ...`);
     });
     return server;
 }
 
-function setupProcessExit(server) {
+function setupProcessExit() {
     async function exitHandler(code) {
         code = code instanceof Error ? 1 : code;
         process.exit(code);
@@ -91,25 +104,20 @@ function setupServerError(server) {
     });
 }
 
-export default async function startApp(argv) {
+export default async function serve(argv) {
     obs.observe({ entryTypes: ["measure"] });
     performance.mark("startAppStart");
-
-    setupProcessExit(server);
-
-    const app = express();
-
-    app.use("/", getMiddleware());
-    app.use("/portfolio", express.static(`../portfolio-front/build`));
-    app.use("/api", getRoutes());
 
     logger.info(`Starting ${appName} ${appVersion} on ${os.hostname()}`);
 
     try {
         setupEnvironment();
-        const config = parseConfig(argv);
+        const config = setupConfig(argv);
+        const app = setupAppRoutes();
+        setupProcessExit();
         await connectToDb(config.db);
-        serveApp(config.ca, config.port, app);
+        setupServer(config.ca, config.port, app);
+        setupServerError(server);
     } catch (err) {
         if (err instanceof FatalError) {
             logger.error(err.toString());
@@ -118,8 +126,6 @@ export default async function startApp(argv) {
             throw err;
         }
     }
-
-    setupServerError(server);
 
     performance.mark("startAppEnd");
     performance.measure("getUserPerf", "startAppStart", "startAppEnd");
