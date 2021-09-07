@@ -1,0 +1,17 @@
+{
+    "env": {
+        "node": true,
+        "es2021": true
+    },
+    "plugins": ["prettier"],
+    "parser": "babel-eslint",
+    "extends": ["prettier", "eslint:recommended", "plugin:node/recommended"],
+    "parserOptions": {
+        "ecmaVersion": 12,
+        "sourceType": "module"
+    },
+    "rules": {
+        "no-process-exit": "off"
+    },
+    "ignorePatterns": ["node_modules", "build", "dist", "public"]
+}

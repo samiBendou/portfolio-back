@@ -6,7 +6,8 @@
     "main": "src/index.js",
     "scripts": {
         "serve_https": "node src/index.js serve",
-        "serve_5000": "node src/index.js serve 5000"
+        "serve_5000": "node src/index.js serve 5000",
+        "format": "prettier-eslint --write \"{,!(node_modules)/**/}*.{js,jsx}\""
     },
     "author": "samiBendou",
     "license": "ISC",
@@ -20,6 +21,13 @@
         "yargs": "^16.2.0"
     },
     "devDependencies": {
-        "prettier": "2.3.2"
+        "babel-eslint": "^10.1.0",
+        "eslint": "^7.32.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-prettier": "^4.0.0",
+        "eslint-plugin-react": "^7.25.1",
+        "prettier": "^2.3.2",
+        "prettier-eslint-cli": "^5.0.1"
     }
 }
