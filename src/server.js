@@ -8,12 +8,15 @@ import { appName, appVersion } from "./index.js";
 import express from "express";
 import os from "os";
 import https from "https";
+import http from "http";
 import yargs from "yargs";
 import dotenv from "dotenv";
 import { hideBin } from "yargs/helpers";
 import { ExitCode, FatalError } from "./errors.js";
+import path from "path";
 
 let server = undefined;
+let insecure = undefined;
 
 function setupEnvironment() {
     if (process.env.NODE_ENV !== "production") {
@@ -30,6 +33,9 @@ function setupAppRoutes() {
     app.use("/", getMiddleware());
     app.use("/", express.static(`../portfolio-front/build`));
     app.use("/api", getRoutes());
+    app.get("*", (req, res) => {
+        res.sendFile(path.resolve("../portfolio-front/build/index.html"));
+    });
     return app;
 }
 
@@ -62,8 +68,12 @@ function setupConfig() {
 }
 
 function setupServer(ca, port, app) {
+    const httpPort = port != 443 ? port + 1 : 80;
     server = https.createServer(ca, app).listen(port, () => {
         logger.info(`Listening on https://localhost:${server.address().port} ...`);
+    });
+    insecure = http.createServer(app).listen(httpPort, () => {
+        logger.info(`Listening on http://localhost:${insecure.address().port} ...`);
     });
     return server;
 }

@@ -21,9 +21,17 @@ function errorMiddleware(error, req, res, next) {
     }
 }
 
+function ensureSecure(error, req, res, next) {
+    if (req.secure) {
+        return next();
+    }
+    res.redirect("https://" + req.hostname + req.url); // express 4.x
+}
+
 export default function getMiddleware() {
     const router = express.Router();
     router.use(cors());
+    router.use(ensureSecure);
     router.use(errorMiddleware);
     router.use(getIncomingAddr);
     return router;
