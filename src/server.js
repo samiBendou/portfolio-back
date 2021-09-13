@@ -35,7 +35,7 @@ function setupAppRoutes(config) {
 
     app.use("/", getMiddleware());
     app.use("/", express.static(`../portfolio-front/build`));
-    app.use("/api", getRoutes(readerClient, adminClient, authTokens, config));
+    app.use("/api", getRoutes(readerClient, authTokens, config));
     app.get("/*", (req, res) => {
         res.sendFile(path.resolve("../portfolio-front/build/index.html"));
     });

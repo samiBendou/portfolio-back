@@ -37,6 +37,7 @@ export default function getMiddleware() {
     router.use(errorMiddleware);
     router.use(ensureSecure);
     router.use(cookieParser());
+    router.use(express.json());
     router.use(express.urlencoded({ extended: false }));
 
     return router;

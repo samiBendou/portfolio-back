@@ -1,9 +1,9 @@
 import fs from "fs";
 
-class DbUser {
+export class DbUser {
     constructor(username, password) {
         this.username = encodeURIComponent(username);
-        this.password = password;
+        this.password = encodeURIComponent(password);
     }
 }
 
@@ -16,7 +16,7 @@ export class DbConfig {
     }
 }
 
-class CaConfig {
+export class CaConfig {
     constructor(key, cert) {
         this.key = fs.readFileSync(key, "utf-8");
         this.cert = fs.readFileSync(cert, "utf-8");

@@ -16,8 +16,6 @@ export async function findUser(username, client) {
 }
 
 export async function updateUser(username, data, client) {
-    console.log(data);
     let user = await client.db("portfolio").collection("users").updateOne({ username: username }, { $set: data });
-    console.log(user);
     return user;
 }
