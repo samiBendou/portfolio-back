@@ -9,7 +9,7 @@ const generateAuthToken = () => {
     return crypto.randomBytes(30).toString("hex");
 };
 
-function generateAuth(authTokens, config) {
+function generateAuthUser(tokens, config) {
     return async function authenticateUser(req, res) {
         const { username, password } = req.body;
         const user = new DbUser(username, password);
@@ -18,7 +18,7 @@ function generateAuth(authTokens, config) {
             performance.mark("authUserStart");
             const client = await connectToDb(db);
             const authToken = generateAuthToken();
-            authTokens[authToken] = user;
+            tokens[authToken] = user;
             client.close();
             performance.mark("authUserEnd");
             logger.info(`Authentication of "${user.username}" succeeded`);
@@ -36,9 +36,9 @@ function generateAuth(authTokens, config) {
     };
 }
 
-function generateEdit(authTokens, config) {
+function generateEditUser(tokens, config) {
     return async function editUser(req, res) {
-        const user = authTokens[req.cookies["AuthToken"]];
+        const user = tokens[req.cookies["AuthToken"]];
         if (!user) {
             logger.warn(`Unauthenticated user attempting to edit`);
             res.status(403).send("Access forbidden!");
@@ -60,9 +60,9 @@ function generateEdit(authTokens, config) {
     };
 }
 
-export default function getAdminRoutes(authTokens, config) {
+export default function getAdminRoutes(tokens, config) {
     const router = express.Router();
-    router.post("/auth", generateAuth(authTokens, config));
-    router.post("/edit", generateEdit(authTokens, config));
+    router.post("/auth", generateAuthUser(tokens, config));
+    router.post("/edit", generateEditUser(tokens, config));
     return router;
 }
