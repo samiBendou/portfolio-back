@@ -1,8 +1,7 @@
 import { FindUserError } from "../errors.js";
 import { fetchUserLocations } from "../utils/geolocation.js";
-import { client } from "./index.js";
 
-export async function findUser(username) {
+export async function findUser(username, client) {
     let user = await client.db("portfolio").collection("users").findOne({ username: username });
     if (user === null) {
         throw new FindUserError(username, undefined, `User does not exist !`);
@@ -13,5 +12,12 @@ export async function findUser(username) {
     user["items"].timeline.forEach((item, index) => {
         item.location = items.timeline[index];
     });
+    return user;
+}
+
+export async function updateUser(username, data, client) {
+    console.log(data);
+    let user = await client.db("portfolio").collection("users").updateOne({ username: username }, { $set: data });
+    console.log(user);
     return user;
 }

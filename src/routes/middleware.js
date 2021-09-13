@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { logger } from "../utils/logging.js";
 
 async function getIncomingAddr(req, res, next) {
@@ -26,7 +27,7 @@ function ensureSecure(req, res, next) {
         return next();
     }
     logger.warn(`Insecure access attempt ${req.url}`);
-    res.redirect("https://" + req.hostname + req.url); // express 4.x
+    res.redirect("https://" + req.hostname + req.url);
 }
 
 export default function getMiddleware() {
@@ -35,5 +36,8 @@ export default function getMiddleware() {
     router.use(getIncomingAddr);
     router.use(errorMiddleware);
     router.use(ensureSecure);
+    router.use(cookieParser());
+    router.use(express.urlencoded({ extended: false }));
+
     return router;
 }

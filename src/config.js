@@ -7,7 +7,7 @@ class DbUser {
     }
 }
 
-class DbConfig {
+export class DbConfig {
     constructor(host, port, name, user) {
         this.host = host;
         this.port = port;

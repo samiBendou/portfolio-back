@@ -17,6 +17,9 @@ import path from "path";
 
 let server = undefined;
 let insecure = undefined;
+let readerClient = undefined;
+let adminClient = undefined;
+const authTokens = {};
 
 function setupEnvironment() {
     if (process.env.NODE_ENV !== "production") {
@@ -27,13 +30,13 @@ function setupEnvironment() {
     }
 }
 
-function setupAppRoutes() {
+function setupAppRoutes(config) {
     const app = express();
 
     app.use("/", getMiddleware());
     app.use("/", express.static(`../portfolio-front/build`));
-    app.use("/api", getRoutes());
-    app.get("*", (req, res) => {
+    app.use("/api", getRoutes(readerClient, adminClient, authTokens, config));
+    app.get("/*", (req, res) => {
         res.sendFile(path.resolve("../portfolio-front/build/index.html"));
     });
     return app;
@@ -120,9 +123,9 @@ export default async function serve(argv) {
     try {
         setupEnvironment();
         const config = setupConfig(argv);
-        const app = setupAppRoutes();
         setupProcessExit();
-        await connectToDb(config.db);
+        readerClient = await connectToDb(config.db);
+        const app = setupAppRoutes(config);
         setupServer(config.ca, config.port, app);
         setupServerError(server);
     } catch (err) {
