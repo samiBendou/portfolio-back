@@ -8,9 +8,9 @@ export async function findUser(username, client) {
     }
 
     const items = await fetchUserLocations(user);
-    user["location"] = items.location;
+    user["location"].resolved = items.location;
     user["items"].timeline.forEach((item, index) => {
-        item.location = items.timeline[index];
+        item.location.resolved = items.timeline[index];
     });
     return user;
 }
