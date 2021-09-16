@@ -23,14 +23,14 @@ function generateAuthUser(tokens, config) {
             performance.mark("authUserEnd");
             logger.info(`Authentication of "${user.username}" succeeded`);
             performance.measure("authUserPerf", "authUserStart", "authUserEnd");
-            res.cookie("AuthToken", authToken);
-            res.redirect("/admin");
+            res.cookie("AuthToken", authToken).sendStatus(200);
         } catch (error) {
+            logger.info(`Authentication of "${user.username}" failed`);
             logger.warn(error.message);
             if (error.reason) {
                 logger.debug(error.reason.message);
             }
-            res.redirect("/admin/login");
+            res.sendStatus(403);
             return;
         }
     };
@@ -56,7 +56,7 @@ function generateEditUser(tokens, config) {
         } catch (error) {
             logger.warn(error.message);
         }
-        res.redirect("/admin");
+        res.sendStatus(200);
     };
 }
 

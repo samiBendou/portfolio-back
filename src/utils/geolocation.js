@@ -6,6 +6,9 @@ const euCountriesApi = "https://restcountries.eu/rest/v2/alpha";
 const frGeolocationApi = "https://geo.api.gouv.fr";
 
 async function fetchCountry(location) {
+    if (!location.country) {
+        return "Unknown";
+    }
     const url = `${euCountriesApi}/${location.country}`;
     let json = undefined;
     try {
@@ -15,12 +18,15 @@ async function fetchCountry(location) {
         throw new FetchLocationError(location, err, url, "failed to fetch country");
     }
     if (json.length === 0) {
-        throw new FetchLocationError(location, undefined, url, "country not found");
+        return "Unknown";
     }
     return json["name"];
 }
 
 async function fetchCounty(location) {
+    if (!location.zip) {
+        return "Unknown";
+    }
     const url = `${frGeolocationApi}/departements?code=${location.zip.slice(0, 2)}`;
     let json = undefined;
     try {
@@ -30,12 +36,15 @@ async function fetchCounty(location) {
         throw new FetchLocationError(location, err, url, "failed to fetch county");
     }
     if (json.length === 0) {
-        throw new FetchLocationError(location, undefined, url, "county not found");
+        return "Unknown";
     }
     return json[0]["nom"];
 }
 
 async function fetchCity(location) {
+    if (!location.zip) {
+        return "Unknown";
+    }
     const url = `${frGeolocationApi}/communes?codePostal=${location.zip}&format=json`;
     let json = undefined;
     try {
@@ -45,7 +54,7 @@ async function fetchCity(location) {
         throw new FetchLocationError(location, err, url, "failed to fetch city");
     }
     if (json.length === 0) {
-        throw new FetchLocationError(location, undefined, url, "city not found");
+        return "Unknown";
     }
     return json[0]["nom"];
 }
@@ -55,6 +64,9 @@ async function fetchTimelineLocation(items) {
 }
 
 export async function fetchLocation(location) {
+    if (!location) {
+        return undefined;
+    }
     const items = await Promise.all([fetchCountry(location), fetchCounty(location), fetchCity(location)]);
     return { country: items[0], county: items[1], city: items[2] };
 }
