@@ -28,7 +28,6 @@ function generateLogUser(tokens, config) {
             performance.mark("authUserEnd");
             logger.info(`Authentication of "${user.username}" succeeded`);
             performance.measure("authUserPerf", "authUserStart", "authUserEnd");
-            console.log(token);
             res.status(200).send(token);
         } catch (error) {
             logger.info(`Authentication of "${user.username}" failed`);
@@ -44,7 +43,6 @@ function generateLogUser(tokens, config) {
 function generateAuthUser(tokens) {
     return function authenticateUser(req, res, next) {
         const token = getAccessToken(req);
-        console.log(req.headers);
         if (!token) {
             return res.sendStatus(401);
         }
