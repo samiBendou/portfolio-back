@@ -72,6 +72,7 @@ export async function fetchLocation(location) {
 }
 
 export async function fetchUserLocations(user) {
-    const items = await Promise.all([fetchLocation(user.location), fetchTimelineLocation(user.items.timeline)]);
+    const timeline = [...user.items.projects, ...user.items.education, ...user.items.experience];
+    const items = await Promise.all([fetchLocation(user.location), fetchTimelineLocation(timeline)]);
     return { location: items[0], timeline: items[1] };
 }

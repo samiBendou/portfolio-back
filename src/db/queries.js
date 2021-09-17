@@ -8,8 +8,8 @@ export async function findUser(username, client) {
     }
 
     const items = await fetchUserLocations(user);
-    user["location"].resolved = items.location;
-    user["items"].timeline.forEach((item, index) => {
+    user.location.resolved = items.location;
+    [...user.items.projects, ...user.items.education, ...user.items.experience].forEach((item, index) => {
         if (!item.location) {
             return;
         }
