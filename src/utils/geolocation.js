@@ -20,7 +20,7 @@ async function fetchCountry(location) {
     if (json.length === 0) {
         return "Unknown";
     }
-    return json["name"]["common"];
+    return json[0]["name"]["common"];
 }
 
 async function fetchCounty(location) {
