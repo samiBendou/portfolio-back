@@ -2,7 +2,7 @@
 import fetch from "node-fetch";
 import { FetchLocationError } from "../errors.js";
 
-const euCountriesApi = "https://restcountries.com/v3.1/alpha    ";
+const euCountriesApi = "https://restcountries.com/v3.1/alpha";
 const frGeolocationApi = "https://geo.api.gouv.fr";
 
 async function fetchCountry(location) {
