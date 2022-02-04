@@ -6,3 +6,5 @@ cert/
 node_modules/
 .env
 api.log
+Dockerfile
+docker-compose.yml
